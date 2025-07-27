@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyansistring"
+version = "0.0.4.alpha"
+authors = [
+  {name="Volodymyr Horshenin"},
+]
+requires-python = ">=3.10"
+description = "A library for string color styling using ANSI escape sequences."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = [
+  "colored string",
+  "colored text",
+  "coloring",
+  "colors",
+  "ANSI escape sequences",
+  "terminal",
+  "terminal colors",
+  "cli",
+  "command line",
+  "text formatting",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Topic :: Terminals",
+  "Topic :: Text Processing",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+all = [
+  "pyansistring[img]",
+]
+img = [
+  "fonttools",
+  "svgpathtools",
+  "pillow",
+]
+
+[project.urls]
+Repository = "https://github.com/l1asis/pyansistring"
+Issues = "https://github.com/l1asis/pyansistring/issues"
