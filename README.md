@@ -67,7 +67,7 @@ Or locally **via git**:
     pip install .
     ```
 
-<p style="text-align: right;">(<a href="#pyansistring">back to top</a>)</p>
+<p align="right">(<a href="#pyansistring">back to top</a>)</p>
 
 ## Usage
 
@@ -104,7 +104,7 @@ print(ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA).actual_length == len
 print(ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA).plain)
 ```
 
-<p style="text-align: right;">(<a href="#pyansistring">back to top</a>)</p>
+<p align="right">(<a href="#pyansistring">back to top</a>)</p>
 
 ## Contributing
 
@@ -121,15 +121,15 @@ Don't forget to give the project a star! Thanks again!
 
 **P.S.** I would love to see your arts made with ***pyansistring*** in the `arts.py` file, with proper attribution, of course!
 
-<p style="text-align: right;">(<a href="#pyansistring">back to top</a>)</p>
+<p align="right">(<a href="#pyansistring">back to top</a>)</p>
 
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
-<p style="text-align: right;">(<a href="#pyansistring">back to top</a>)</p>
+<p align="right">(<a href="#pyansistring">back to top</a>)</p>
 
 ## Acknowledgements
 * [Othneil Drew's Best README Template](https://github.com/othneildrew/Best-README-Template)
 
-<p style="text-align: right;">(<a href="#pyansistring">back to top</a>)</p>
+<p align="right">(<a href="#pyansistring">back to top</a>)</p>
