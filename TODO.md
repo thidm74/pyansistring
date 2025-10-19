@@ -144,5 +144,7 @@
   - [X] italic style support <!-- "Italic": "font-style: italic;" -->
   - [X] transparent background support
   - [ ] outline (or vectorize) functionality
+  - [ ] background color support (depending on the bbox, rectangles)
+  - [ ] add viewBox attribute (min-x, min-y, width, height)
 - [ ] `to_png` (create png image from `ANSIString`)
 - [ ] (?) `to_img` (create image (with format specified) from `ANSIString`)

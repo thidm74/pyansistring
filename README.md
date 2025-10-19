@@ -71,38 +71,147 @@ Or locally **via git**:
 
 ## Usage
 
+#### Import the necessary classes and initialize an `ANSIString` instance:
 ```python
-from pyansistring import ANSIString
+from pyansistring.pyansistring import ANSIString
 from pyansistring.constants import SGR, Foreground, Background
 
-# Does what it should: prints all text in bold, with magenta foreground and white background.
-print(ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA).bg_4b(Background.WHITE).fm(SGR.BOLD))
-
-# But you can do the same on a specific slice:
-print(ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA, (0, 4)).bg_4b(Background.WHITE, (2, 4)).fm(SGR.BOLD, (4, 6)))
-
-# Or if you want to apply styles to a specific word
-print(ANSIString("Hello, World!").fg_4b_w(Foreground.MAGENTA, "Hello", "World").bg_4b_w(Background.WHITE, "World").fm_w(SGR.BOLD, ","))
-
-# You may find predefined colors boring, let's do it with RGB:
-print(ANSIString("Hello, World!").fg_24b(255, 0, 255).bg_24b(255, 255, 255))
-
-# And of course you can do the same tricks with words:
-print(ANSIString("Hello, World!").fg_24b_w(255, 0, 255, "Hello").bg_24b_w(255, 255, 255, "World"))
-
-# By the way...
-print(len(ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA)) == len("Hello, World!"))
-# -> True
-
-# Why? Because I wanted it to behave this way. But at the same time:
-print(len(ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA).styled) == len("Hello, World!"))
-# -> False
-print(ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA).actual_length == len("Hello, World!"))
-# -> False
-
-# If you need the original string:
-print(ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA).plain)
+text = ANSIString("Hello, World!")
+print(text)
 ```
+![Result: unstyled plain string](./images/usage_unstyled.svg)
+
+#### Style the whole string:
+```python
+print(
+    ANSIString("Hello, World!")
+        .fg_4b(Foreground.MAGENTA)
+        .bg_4b(Background.WHITE)
+        .fm(SGR.BOLD)
+)
+```
+![Result: string with magenta foreground, white background, and bold styling](./images/usage_whole.svg)
+
+#### Style by slice (indices are \[start, end, step\]):
+```python
+print(
+    ANSIString("Hello, World!")
+        .fg_4b(Foreground.MAGENTA, (0, 5))   # "Hello"
+        .bg_4b(Background.WHITE, (7, 12))    # "World"
+        .fm(SGR.BOLD, (7, 12))               # "World"
+)
+```
+![Result: string with magenta foreground "Hello", white background "World", and bold styling](./images/usage_slice.svg)
+
+#### Style by words:
+```python
+print(
+    ANSIString("Hello, World!")
+        .fg_4b_w(Foreground.MAGENTA, "Hello", "World")
+        .bg_4b_w(Background.WHITE, "World")
+        .fm_w(SGR.BOLD, ",")
+)
+```
+![Result: string with magenta foreground "Hello" and "World", white background "World", and bold comma styling](./images/usage_words.svg)
+
+#### SGR parameters like bold and underline:
+```python
+print(
+    ANSIString("Hello, World!")
+        .fm(SGR.BOLD)
+        .fm(SGR.UNDERLINE)
+)
+```
+![Result: bold and single underlined string](./images/usage_sgr.svg)
+
+#### 4-bit examples (doesn't exist for underline):
+```python
+print(
+    ANSIString("Hello, World!")
+        .fg_4b(Foreground.MAGENTA)
+        .bg_4b(Background.WHITE)
+)
+```
+![Result: string with magenta foreground and white background](./images/usage_4bit.svg)
+
+#### 8-bit examples:
+```python
+print(
+    ANSIString("Hello, World!")
+        .fg_8b(201)
+        .bg_8b(15)
+        .ul_8b(10)
+)
+```
+![Result: string with bright magenta foreground, white background, and green underline](./images/usage_8bit.svg)
+
+#### 24-bit (True Color) example:
+```python
+print(
+    ANSIString("Hello, World!")
+        .fg_24b(255, 0, 255)
+        .bg_24b(255, 255, 255)
+        .ul_24b(0, 255, 0)
+)
+```
+![Result: string with bright magenta foreground, white background, and green underline](./images/usage_rgb.svg)
+
+#### Underline modes:
+```python
+print(
+    ANSIString("Hello, World!")
+        .ul_8b(201)
+        .fm(UnderlineMode.DOUBLE)
+)
+```
+![Result: underlined text with double bright magenta underline](./images/usage_underline.svg)
+
+#### Lengths and plain text:
+```python
+styled = ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA)
+
+print(len(styled) == len("Hello, World!"))
+# True (logical length ignores ANSI)
+print(len(styled.styled_text) == len("Hello, World!"))
+# False (includes ANSI codes)
+print(styled.actual_length == len("Hello, World!"))
+# False (includes ANSI codes)
+print(styled.plain)
+# "Hello, World!"
+```
+
+#### ANSIString conversion to SVG:
+```python
+from fontTools.ttLib import TTFont
+
+styled = ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA)
+styled.to_svg(font=TTFont("path/to/font.ttf"), save_to_file=True, output_filename="hello_world.svg")
+```
+
+
+#### Rainbow text as a separate function:
+```python
+print(
+    ANSIString("Hello, World! This is rainbow text!")
+        .rainbow(fg=True)
+)
+```
+![Result: rainbow text with automatic transition](./images/usage_rainbow.svg)
+
+#### Colored text using multicolor functionality:
+```python
+print(
+    ANSIString("Hello, World! This is multicolor text!")
+        .multicolor((
+            "r=0:|g=0:|b=255:   $ "  # Start with blue
+            "b>0:repeat(auto)   # "  # Decrease blue
+            "r>255:repeat(auto) | " # Increase green and combine with...
+            "g>255:repeat(auto)   " # Increase red
+            "                   &*" # Cycle & Start without apply flags
+        ))
+)
+```
+![Result: multicolor text with a transition effect from blue to yellow](./images/usage_multicolor.svg)
 
 <p align="right">(<a href="#pyansistring">back to top</a>)</p>
 
