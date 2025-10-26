@@ -43,7 +43,6 @@ all = [
 ]
 img = [
   "fonttools",
-  "svgpathtools",
   "pillow",
 ]
 

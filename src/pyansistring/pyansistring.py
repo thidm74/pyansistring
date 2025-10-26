@@ -14,11 +14,15 @@ from typing import Annotated, Any, Callable, Literal, Self, overload, Union, Sup
 if not TYPE_CHECKING:
     try:
         from fontTools.ttLib import TTFont
+        from fontTools.pens.svgPathPen import SVGPathPen
+        from fontTools.pens.transformPen import TransformPen
         is_fonttools_available = True
     except Exception:
         is_fonttools_available = False
 else:
     from fontTools.ttLib import TTFont
+    from fontTools.pens.svgPathPen import SVGPathPen
+    from fontTools.pens.transformPen import TransformPen
     is_fonttools_available = True
 
 from .constants import *
@@ -821,12 +825,13 @@ class ANSIString(str):
         self,
         font: TTFont | Path | str,
         point_size: int | float,
-        line_height: int | float = 0,
-        letter_spacing: int | float = 0,  # letter spacing in pixels
+        line_height_offset: int | float = 0,
+        letter_spacing_offset: int | float = 0,  # in pixels
         padx: tuple[int | float, int | float] = (0, 0),
         pady: tuple[int | float, int | float] = (0, 0),
-        transparent: bool = True,
+        transparent_background: bool = True,
         background_color: tuple[int, int, int] = (255, 255, 255),
+        convert_text_to_path: bool = False,
         save_to_file: bool = False,
         output_filename: str = "output.svg",
     ) -> str:
@@ -839,6 +844,29 @@ class ANSIString(str):
         if isinstance(font, (Path, str)):
             font = TTFont(font)
 
+        escape_table = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+        }
+        underline_style_map = {
+            UnderlineMode.SINGLE: "solid",
+            UnderlineMode.DOUBLE: "double",
+            UnderlineMode.DOTTED: "dotted",
+            UnderlineMode.DASHED: "dashed",
+            UnderlineMode.CURLY: "wavy",
+        }
+        lines = self.plain_text.splitlines(keepends=False)
+        svg_parts: list[str] = []
+        texts: list[str] = []
+        paths: list[str] = []
+        rects: list[str] = []
+        chars: list[str] = []
+
+        font_family = font['name'].getDebugName(1) or "sans-serif"
+
         cmap = font.getBestCmap()
         glyph_set = font.getGlyphSet()
 
@@ -846,85 +874,92 @@ class ANSIString(str):
         ascent = font['hhea'].ascent
         descent = font['hhea'].descent
         line_gap = font['hhea'].lineGap
-        em_height = ascent - descent
 
-        unit_to_pixel = point_size / units_per_em
-        auto_line_height = (em_height + line_gap) * unit_to_pixel
+        hmtx = font["hmtx"]
 
-        lines = self.plain_text.splitlines(keepends=False)
-        line_count = len(lines)
+        scale = point_size / units_per_em
+        
+        cell_height = ascent - descent  # or em_height
+        line_height = cell_height + line_gap
+        line_height_px = (ascent - descent + line_gap) * scale
 
-        # Calculate max width in pixels (sum glyph widths, then add letter spacing in pixels)
-        max_width = 0
-        for line in lines:
-            line_width_units = 0
+        total_width = 0
+        total_height = (ascent - descent + line_gap) * len(lines) * scale
+
+        charno = 0
+        y_cursor = ascent + line_gap
+        for lineno, line in enumerate(lines):
+            x_cursor = 0
             for char in line:
                 glyph_name = cmap.get(ord(char), ".notdef")
                 glyph = glyph_set.get(glyph_name, glyph_set[".notdef"])
-                line_width_units += glyph.width
-            line_width_px = line_width_units * unit_to_pixel
-            if len(line) > 1:
-                line_width_px += letter_spacing * (len(line) - 1)  # letter spacing in pixels
-            if line_width_px > max_width:
-                max_width = line_width_px
+                advance_width, _ = hmtx[glyph_name]
 
-        effective_line_height = auto_line_height + line_height
+                if charno in self.style_manager and self.style_manager[charno].background:
+                    rects.append(" "*2 + f"<rect x=\"{x_cursor * scale}\" y=\"{(y_cursor - ascent - line_gap) * scale}\" width=\"{advance_width * scale}\" height=\"{(cell_height + line_gap) * scale}\" fill=\"rgb{self.style_manager[charno].background.to_rgb()}\" />")
 
-        # Calculate total height precisely to avoid extra bottom space
-        total_height = ascent * unit_to_pixel + (line_count - 1) * effective_line_height + (-descent) * unit_to_pixel
-
-        width_with_padding = max_width + padx[0] + padx[1]
-        height_with_padding = total_height + pady[0] + pady[1]
-
-        font_family = font['name'].getDebugName(1) or "sans-serif"
-
-        # Start writing SVG XML with multiline <text> and tspans
-        lines_svg = [
-            '<?xml version="1.0" encoding="UTF-8" standalone="no"?>',
-            f'<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="{width_with_padding}" height="{height_with_padding}">',
-            (f'<rect width="100%" height="100%" fill="rgb{background_color}"/>' if not transparent else ''),
-            f'<text x="{padx[0]}" y="{pady[0] + ascent * unit_to_pixel}" '
-            f'font-family="{font_family}" font-size="{point_size}" fill="black" '
-            f'letter-spacing="{letter_spacing}px" xml:space="preserve">',
-        ]
-
-        char_index = 0
-        for i, line in enumerate(lines):
-            esc_line = (
-                line.replace("&", "&amp;")
-                    .replace("<", "&lt;")
-                    .replace(">", "&gt;")
-                    .replace('"', "&quot;")
-                    .replace("'", "&apos;")
-            )
-            chars: list[str] = []
-            for index, char in enumerate(esc_line):
-                # Check if the character has a style applied
-                if char_index in self.style_manager:
-                    chars.append(
-                        f"<tspan"
-                        + f" fill=\"rgb{self.style_manager[char_index].foreground.to_rgb()}\""
-                        + (f" font-weight=\"bold\"" if SGR.BOLD in self.style_manager[char_index].attributes else "")
-                        + (f" font-style=\"italic\"" if SGR.ITALIC in self.style_manager[char_index].attributes else "")
-                        # + (f"text-decoration=\"underline\"" if SGR.UNDERLINE in self.style_manager[char_index].attributes else "")
-                        + f">{char}</tspan>"
-                    )
+                if not convert_text_to_path:
+                    if charno in self.style_manager:
+                        chars.append(
+                            f"<tspan"
+                            + (f" fill=\"rgb{self.style_manager[charno].foreground.to_rgb()}\"" if self.style_manager[charno].foreground else "")
+                            + (f" font-weight=\"bold\"" if SGR.BOLD in self.style_manager[charno].attributes else "")
+                            + (f" font-style=\"italic\"" if SGR.ITALIC in self.style_manager[charno].attributes else "")
+                            + (f" text-decoration=\"underline auto {underline_style_map.get(self.style_manager[charno].underline[1], "solid")} rgb{self.style_manager[charno].underline[0].to_rgb()}\"" if self.style_manager[charno].underline[0] else (f"text-decoration=\"underline auto solid\"" if SGR.UNDERLINE in self.style_manager[charno].attributes else ""))
+                            + f">{escape_table.get(char, char)}</tspan>"
+                        )
+                    else:
+                        chars.append(f"<tspan>{escape_table.get(char, char)}</tspan>")
                 else:
-                    chars.append(f"<tspan>{char}</tspan>")
-                char_index += 1
-                if index == len(esc_line) - 1:
-                    char_index += 1  # Account for the newline character
-            if i == 0:
-                lines_svg.append(f'<tspan x="{padx[0]}" dy="0">{"".join(chars)}</tspan>')
-            else:
-                lines_svg.append(f'<tspan x="{padx[0]}" dy="{effective_line_height}">{"".join(chars)}</tspan>')
+                    pen = SVGPathPen(glyph_set)
+                    t_pen = TransformPen(pen, (scale, 0, 0, -scale, x_cursor * scale, y_cursor * scale))
+                    glyph_set[glyph_name].draw(t_pen)
+                    if charno in self.style_manager:
+                        paths.append(f"{" "*2}<path d=\"{pen.getCommands()}\" fill=\"black\" />")
+                    else:
+                        paths.append(f"{" "*2}<path d=\"{pen.getCommands()}\" fill=\"{f"rgb{self.style_manager[charno].foreground.to_rgb()}" if self.style_manager[charno].foreground else "black"}\" />")
 
-        lines_svg.append("</text></svg>")
+                charno += 1 # string char
 
-        svg_content = "\n".join(lines_svg)
+                x_cursor += advance_width
+            
+            if not convert_text_to_path:
+                texts.append(
+                    f"{" "*4}<tspan x=\"0\" dy=\"{0 if lineno == 0 else line_height_px}\">\n{" "*6}{"".join(chars)}\n{" "*4}</tspan>"
+                )
+                chars.clear()
+
+            # Move to next line
+            if x_cursor * scale > total_width:
+                total_width = x_cursor * scale
+            y_cursor += line_height
+
+            charno += 1 # newline
+
+        print(total_width, total_height)
+        print(paths)
+
+        # Example: building SVG
+        svg_parts = [
+            # "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>",
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{total_width}" height="{total_height}" viewBox="0 0 {total_width} {total_height}">',
+            (f'{" "*2}<rect width="100%" height="100%" fill="rgb{background_color}"/>' if not transparent_background else ""),
+        ]
+        for svg_rect in rects:
+            svg_parts.append(svg_rect)
+        if not convert_text_to_path:
+            svg_parts.append(f'{" "*2}<text x=\"{padx[0]}\" y=\"{pady[0] + ascent * scale}\" font-family=\"{font_family}\" font-size=\"{point_size}\" fill=\"black\" letter-spacing=\"{letter_spacing_offset}\">')
+            for svg_text in texts:
+                svg_parts.append(svg_text)
+            svg_parts.append(f"{" "*2}</text>")
+        for svg_path in paths:
+            svg_parts.append(svg_path)
+        svg_parts.append("</svg>")
+
+        svg_content ="\n".join(svg_parts)
 
         if save_to_file:
-            with open(output_filename, "w", encoding="utf-8") as file:
+            with open(output_filename, "wt", encoding="utf-8") as file:
                 file.write(svg_content)
 
         return svg_content
