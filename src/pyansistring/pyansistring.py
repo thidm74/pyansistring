@@ -891,37 +891,93 @@ class ANSIString(str):
         for lineno, line in enumerate(lines):
             x_cursor = 0
             for char in line:
+                escaped_char: str = escape_table.get(char, char)
+
                 glyph_name = cmap.get(ord(char), ".notdef")
                 glyph = glyph_set.get(glyph_name, glyph_set[".notdef"])
                 advance_width, _ = hmtx[glyph_name]
 
-                if charno in self.style_manager and self.style_manager[charno].background:
-                    rects.append(" "*2 + f"<rect x=\"{x_cursor * scale}\" y=\"{(y_cursor - ascent - line_gap) * scale}\" width=\"{advance_width * scale}\" height=\"{(cell_height + line_gap) * scale}\" fill=\"rgb{self.style_manager[charno].background.to_rgb()}\" />")
+                if charno in self.style_manager:
+                    svg_element_attributes: list[str] = []
 
-                if not convert_text_to_path:
-                    if charno in self.style_manager:
-                        chars.append(
-                            f"<tspan"
-                            + (f" fill=\"rgb{self.style_manager[charno].foreground.to_rgb()}\"" if self.style_manager[charno].foreground else "")
-                            + (f" font-weight=\"bold\"" if SGR.BOLD in self.style_manager[charno].attributes else "")
-                            + (f" font-style=\"italic\"" if SGR.ITALIC in self.style_manager[charno].attributes else "")
-                            + (f" text-decoration=\"underline auto {underline_style_map.get(self.style_manager[charno].underline[1], "solid")} rgb{self.style_manager[charno].underline[0].to_rgb()}\"" if self.style_manager[charno].underline[0] else (f"text-decoration=\"underline auto solid\"" if SGR.UNDERLINE in self.style_manager[charno].attributes else ""))
-                            + f">{escape_table.get(char, char)}</tspan>"
+                    if self.style_manager[charno].background:
+                        rects.append(
+                            " "*2
+                            + f"<rect "
+                            + f"x=\"{x_cursor * scale}\" "
+                            + f"y=\"{(y_cursor - ascent - line_gap) * scale}\" "
+                            + f"width=\"{advance_width * scale}\" "
+                            + f"height=\"{(cell_height + line_gap) * scale}\" "
+                            + f"fill=\"rgb{self.style_manager[charno].background.to_rgb()}\""
+                            + "/>"
                         )
-                    else:
-                        chars.append(f"<tspan>{escape_table.get(char, char)}</tspan>")
-                else:
-                    pen = SVGPathPen(glyph_set)
-                    t_pen = TransformPen(pen, (scale, 0, 0, -scale, x_cursor * scale, y_cursor * scale))
-                    glyph_set[glyph_name].draw(t_pen)
-                    if charno in self.style_manager:
-                        paths.append(f"{" "*2}<path d=\"{pen.getCommands()}\" fill=\"black\" />")
-                    else:
-                        paths.append(f"{" "*2}<path d=\"{pen.getCommands()}\" fill=\"{f"rgb{self.style_manager[charno].foreground.to_rgb()}" if self.style_manager[charno].foreground else "black"}\" />")
+                    if self.style_manager[charno].foreground:
+                        svg_element_attributes.append(
+                            f"fill=\"rgb{self.style_manager[charno].foreground.to_rgb()}\""
+                        )
 
-                charno += 1 # string char
+                    if not convert_text_to_path:
+                        if SGR.BOLD in self.style_manager[charno].attributes:
+                            svg_element_attributes.append(
+                                "font-weight=\"bold\""
+                            )
+                        if SGR.ITALIC in self.style_manager[charno].attributes:
+                            svg_element_attributes.append(
+                                "font-style=\"italic\""
+                            )
+                        if not self.style_manager[charno].underline[0]:
+                            if SGR.UNDERLINE in self.style_manager[charno].attributes:
+                                svg_element_attributes.append(
+                                    "text-decoration=\"underline auto solid\""
+                                )
+                            elif SGR.DOUBLE_UNDERLINE in self.style_manager[charno].attributes:
+                                svg_element_attributes.append(
+                                    "text-decoration=\"underline auto double\""
+                                )
+                            chars.append(
+                                f"<tspan {" ".join(svg_element_attributes)}>"
+                                + escaped_char
+                                + "</tspan>"
+                            )
+                        else:
+                            chars.append(
+                                f"<tspan "
+                                + f"fill=\"rgb{self.style_manager[charno].underline[0].to_rgb()}\" "
+                                + f"text-decoration=\"underline auto {underline_style_map.get(self.style_manager[charno].underline[1], "solid")}\""
+                                + ">"
+                                + f"<tspan {" ".join(svg_element_attributes)}>"
+                                + escaped_char
+                                + ("</tspan>"*2)
+                            )
+                    else:
+                        pen = SVGPathPen(glyph_set)
+                        t_pen = TransformPen(pen, (scale, 0, 0, -scale, x_cursor * scale, y_cursor * scale))
+                        
+                        glyph_set[glyph_name].draw(t_pen)
+                        svg_element_attributes.append(
+                            f"d=\"{pen.getCommands()}\""
+                        ) # FIXME: check for whitespace
+
+                        ... # TODO: bold, italic, underline solution for path
+
+                        paths.append(
+                            f"{" "*2}<path {" ".join(svg_element_attributes)}/>"
+                        )
+                else:
+                    if not convert_text_to_path:
+                        chars.append(f"<tspan>{escape_table.get(char, char)}</tspan>")
+                    else:
+                        pen = SVGPathPen(glyph_set)
+                        t_pen = TransformPen(pen, (scale, 0, 0, -scale, x_cursor * scale, y_cursor * scale))
+                        
+                        glyph_set[glyph_name].draw(t_pen)
+                        
+                        paths.append(
+                            f"{" "*2}<path d=\"{pen.getCommands()}\"/>"
+                        )
 
                 x_cursor += advance_width
+                charno += 1  # string char
             
             if not convert_text_to_path:
                 texts.append(
@@ -933,8 +989,7 @@ class ANSIString(str):
             if x_cursor * scale > total_width:
                 total_width = x_cursor * scale
             y_cursor += line_height
-
-            charno += 1 # newline
+            charno += 1  # newline
 
         print(total_width, total_height)
         print(paths)
@@ -948,7 +1003,7 @@ class ANSIString(str):
         for svg_rect in rects:
             svg_parts.append(svg_rect)
         if not convert_text_to_path:
-            svg_parts.append(f'{" "*2}<text x=\"{padx[0]}\" y=\"{pady[0] + ascent * scale}\" font-family=\"{font_family}\" font-size=\"{point_size}\" fill=\"black\" letter-spacing=\"{letter_spacing_offset}\">')
+            svg_parts.append(f'{" "*2}<text x=\"{padx[0]}\" y=\"{pady[0] + (ascent + line_gap) * scale}\" font-family=\"{font_family}\" font-size=\"{point_size}\" fill=\"black\" letter-spacing=\"{letter_spacing_offset}\">')
             for svg_text in texts:
                 svg_parts.append(svg_text)
             svg_parts.append(f"{" "*2}</text>")
